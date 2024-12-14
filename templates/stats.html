@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ deck_name }} Stats</title>
+</head>
+<body>
+    <h1>Stats for {{ deck_name }}</h1>
+    <h2>Overall Stats</h2>
+    <p>Total Matches: {{ total_matches }}</p>
+    <p>Overall Win Rate: {{ "%.2f" | format(overall_win_rate) }}%</p>
+
+    <h2>Opponent Stats</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Opponent Name</th>
+                <th>Total Matches</th>
+                <th>Wins</th>
+                <th>Win Rate (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for opponent in opponent_stats %}
+            <tr>
+                <td>{{ opponent.opponent_name }}</td>
+                <td>{{ opponent.total_matches }}</td>
+                <td>{{ opponent.wins }}</td>
+                <td>{{ "%.2f" | format(opponent.win_rate) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p><a href="/select_deck">Select Another Deck</a></p>
+    <p><a href="/">Return to Home</a></p>
+</body>
+</html>

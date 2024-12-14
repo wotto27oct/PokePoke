@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Deck</title>
+</head>
+<body>
+    <h1>Select a Deck</h1>
+    <form method="post">
+        <label for="deck_id">Choose a Deck:</label>
+        <select id="deck_id" name="deck_id">
+            {% for deck in decks %}
+            <option value="{{ deck.id }}">{{ deck.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">View Stats</button>
+    </form>
+    <p><a href="/">Return to Home</a></p>
+</body>
+</html>

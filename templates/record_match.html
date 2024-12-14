@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Record Match</title>
+</head>
+<body>
+    <h1>Record a Match</h1>
+    <form method="post">
+        <label for="my_deck_id">My Deck:</label>
+        <select id="my_deck_id" name="my_deck_id">
+            {% for deck in decks %}
+            <option value="{{ deck.id }}">{{ deck.name }}</option>
+            {% endfor %}
+        </select>
+        <label for="opponent_deck_id">Opponent Deck:</label>
+        <select id="opponent_deck_id" name="opponent_deck_id">
+            {% for deck in decks %}
+            <option value="{{ deck.id }}">{{ deck.name }}</option>
+            {% endfor %}
+        </select>
+        <label for="result">Result:</label>
+        <select id="result" name="result">
+            <option value="win">Win</option>
+            <option value="lose">Lose</option>
+        </select>
+        <button type="submit">Record</button>
+    </form>
+
+    {% if message %}
+    <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <p><a href="/">Return to Home</a></p>
+</body>
+</html>

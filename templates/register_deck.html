@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register Deck</title>
+</head>
+<body>
+    <h1>Register Your Deck</h1>
+    <form method="post">
+        <label for="deck_name">Deck Name:</label>
+        <input type="text" id="deck_name" name="deck_name" required>
+        <button type="submit">Register</button>
+    </form>
+
+    {% if message %}
+    <p style="color: green;">{{ message }}</p>
+    {% endif %}
+
+    <p><a href="/">Return to Home</a></p>
+</body>
+</html>
