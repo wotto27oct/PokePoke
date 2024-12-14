@@ -16,7 +16,7 @@ class Match(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     my_deck_id = db.Column(db.Integer, db.ForeignKey('deck.id'), nullable=False)
     opponent_deck_id = db.Column(db.Integer, db.ForeignKey('deck.id'), nullable=False)
-    result = db.Column(db.String(10), nullable=False)  # 'win', 'lose', 'draw'
+    result = db.Column(db.String(10), nullable=False)  # 'win', 'lose'
     date = db.Column(db.DateTime, nullable=False)
 
 # 初回起動時にデータベースを作成
@@ -77,33 +77,36 @@ def stats(deck_id):
     else:
         overall_win_rate = 0
 
-    # 各デッキに対する勝敗数と勝率を計算
-    opponents = db.session.query(
-        Deck.id, Deck.name,
+    # 各対戦相手に対する勝敗数と勝率を計算
+    my_deck = db.aliased(Deck)
+    opponent_deck = db.aliased(Deck)
+
+    opponent_stats = db.session.query(
+        opponent_deck.name.label('opponent_name'),
         db.func.count(Match.id).label('total_matches'),
         db.func.sum(db.case((Match.result == 'win', 1), else_=0)).label('wins')
-    ).join(Match, Deck.id == Match.opponent_deck_id)\
+    ).join(opponent_deck, Match.opponent_deck_id == opponent_deck.id)\
      .filter(Match.my_deck_id == deck_id)\
-     .group_by(Deck.id, Deck.name).all()
+     .group_by(opponent_deck.name).all()
 
-    opponent_stats = []
-    for opponent in opponents:
+    stats = []
+    for opponent in opponent_stats:
         win_rate = (opponent.wins / opponent.total_matches) * 100 if opponent.total_matches > 0 else 0
-        opponent_stats.append({
-            'opponent_name': opponent.name,
+        stats.append({
+            'opponent_name': opponent.opponent_name,
             'total_matches': opponent.total_matches,
             'wins': opponent.wins,
             'win_rate': win_rate
         })
 
-    # テンプレートにデータを渡す
     return render_template(
         'stats.html',
         deck_name=deck.name,
         overall_win_rate=overall_win_rate,
         total_matches=total_matches,
-        opponent_stats=opponent_stats
+        stats=stats
     )
+
 
 
 @app.route('/select_deck', methods=['GET', 'POST'])
