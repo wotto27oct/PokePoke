@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pokepoke.db'
@@ -49,11 +50,12 @@ def record_match():
         opponent_deck_id = request.form['opponent_deck_id']
         result = request.form['result']
         if my_deck_id and opponent_deck_id and result:
+            japan_time = datetime.now(pytz.timezone('Asia/Tokyo'))
             match = Match(
                 my_deck_id=my_deck_id,
                 opponent_deck_id=opponent_deck_id,
                 result=result,
-                date=datetime.utcnow()
+                date=japan_time.date()
             )
             db.session.add(match)
             db.session.commit()
@@ -127,7 +129,7 @@ def match_history():
                 db.session.delete(match)
                 db.session.commit()
 
-    # デッキテーブルのエイリアスを作成
+    # デッキテーブルのエイリアス
     my_deck = db.aliased(Deck)
     opponent_deck = db.aliased(Deck)
 
@@ -141,7 +143,20 @@ def match_history():
      .join(opponent_deck, opponent_deck.id == Match.opponent_deck_id)\
      .all()
 
-    return render_template('match_history.html', matches=matches)
+    # 日付をフォーマット（例: YYYY-MM-DD）
+    formatted_matches = [
+        {
+            'id': match.id,
+            'date': match.date.strftime('%Y-%m-%d'),  # 日付をフォーマット
+            'my_deck_name': match.my_deck_name,
+            'opponent_deck_name': match.opponent_deck_name,
+            'result': match.result
+        }
+        for match in matches
+    ]
+
+    return render_template('match_history.html', matches=formatted_matches)
+
 
 
 if __name__ == '__main__':
