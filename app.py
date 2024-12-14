@@ -44,24 +44,44 @@ def register_deck():
 
 @app.route('/record_match', methods=['GET', 'POST'])
 def record_match():
-    message = None  # 成功メッセージ用の変数
+    message = None  # メッセージ用
+    my_deck_id = None  # 自分のデッキを保持
+    opponent_deck_id = None  # 対戦相手のデッキを保持
+
     if request.method == 'POST':
         my_deck_id = request.form['my_deck_id']
         opponent_deck_id = request.form['opponent_deck_id']
-        result = request.form['result']
+        result = request.form.get('result')  # 'win' または 'lose'
+
         if my_deck_id and opponent_deck_id and result:
-            japan_time = datetime.now(pytz.timezone('Asia/Tokyo'))
+            # デッキ名を取得
+            my_deck = Deck.query.get(my_deck_id)
+            opponent_deck = Deck.query.get(opponent_deck_id)
+
+            # 試合を記録
             match = Match(
                 my_deck_id=my_deck_id,
                 opponent_deck_id=opponent_deck_id,
                 result=result,
-                date=japan_time.date()
+                date=datetime.utcnow()
             )
             db.session.add(match)
             db.session.commit()
-            message = "Match recorded successfully!"  # 成功メッセージをセット
+
+            # 動的なメッセージを設定
+            result_text = "Win" if result == "win" else "Lose"
+            message = f"{my_deck.name} と {opponent_deck.name} の試合結果を記録しました：{result_text}"
+
+    # デッキ情報を全件取得
     decks = Deck.query.all()
-    return render_template('record_match.html', decks=decks, message=message)
+
+    return render_template(
+        'record_match.html',
+        decks=decks,
+        message=message,
+        selected_my_deck_id=my_deck_id,
+        selected_opponent_deck_id=opponent_deck_id
+    )
 
 
 @app.route('/stats/<int:deck_id>')
@@ -141,7 +161,7 @@ def match_history():
         Match.result
     ).join(my_deck, my_deck.id == Match.my_deck_id)\
      .join(opponent_deck, opponent_deck.id == Match.opponent_deck_id)\
-     .all()
+     .order_by(Match.date.desc()).all()
 
     # 日付をフォーマット（例: YYYY-MM-DD）
     formatted_matches = [
